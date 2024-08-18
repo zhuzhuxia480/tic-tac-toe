@@ -1,34 +1,56 @@
 import {useState} from "react";
 
 export default function Game() {
-    const [xIsNext, setXIsNext] = useState(true);
     const [history, setHistory] = useState([Array(9).fill(null)]);
-    const currentSquares = history[history.length - 1];
+    const [currentMove, setCurrentMove] = useState(0);
+    const xIsNext = currentMove % 2 === 0;
+    const currentSquares = history[currentMove];
 
+    console.log("currentSquares:", currentSquares);
 
     function handlePlay(nextSquares) {
-        setHistory([...history, nextSquares]);
-        console.log(xIsNext);
-        setXIsNext(!xIsNext);
+        const nextHistory = [...history.slice(0, currentMove + 1), nextSquares];
+        setHistory(nextHistory);
+        setCurrentMove(nextHistory.length - 1);
     }
+
+    function jumpTo(nextMove) {
+        setCurrentMove(nextMove);
+    }
+
+    const moves = history.map((squares, move) => {
+        let desc;
+        if (move > 0) {
+            desc = "Go to move #" + move;
+        } else {
+            desc = "Go to start";
+        }
+
+        return (
+            <li>
+                <button onClick={() => jumpTo(move)}>{desc}</button>
+            </li>
+        );
+    });
     return (
         <div className={"game"}>
             <div className={"game-board"}>
-                <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay} />
+                <Board xIsNext={xIsNext} squares={currentSquares} onPlay={handlePlay}/>
             </div>
             <div className={"game-info"}>
-                <ol>{}</ol>
+                <ol>{moves}</ol>
             </div>
         </div>
     )
 };
 
 export function Board({xIsNext, squares, onPlay}) {
+    console.log("Board get square:", squares);
+
     function handClick(i) {
         if (squares[i] || calculateWinner(squares)) {
             return;
         }
-        console.log(squares);
         let nextSquares = squares.slice();
         if (xIsNext) {
             nextSquares[i] = 'X';
